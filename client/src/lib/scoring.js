@@ -13,46 +13,62 @@
 // response is used as the source of truth — this is a client-side estimate,
 // clearly labeled as such in the UI.
 
-export const WEIGHTS = { data: 0.3, calling: 0.2, budget: 0.25, roaming: 0.15, persona: 0.1 };
+export const WEIGHTS = { data: 0.35, calling: 0.2, budget: 0.25, roaming: 0.1, persona: 0.1 };
 
-const fitCurve = (have, need) => {
-  if (need <= 0) return 1;
-  const ratio = have / need;
-  if (ratio >= 1) {
-    // gentle penalty for very large excess (paying for unused headroom)
-    const excess = ratio - 1;
-    return Math.max(0.55, 1 - excess * 0.18);
+const fitCurve = (have, need, isUnlimited = false) => {
+  if (isUnlimited) return 1.0;
+  if (need <= 0) return 1.0;
+  if (have >= need) {
+    const surplusRatio = (have - need) / need;
+    return Math.max(0.85, 1.0 - Math.min(0.15, surplusRatio * 0.05));
   }
-  // shortfall is penalized harder than excess
-  return Math.max(0, ratio - (1 - ratio) * 0.35);
+  // Heavy penalty for data shortfalls
+  const ratio = have / need;
+  return Math.max(0, ratio * ratio);
 };
 
 const budgetFit = (price, budget) => {
-  if (!budget || budget <= 0) return 0.6;
+  if (!budget || budget <= 0) return 0.8;
   if (price <= budget) {
-    const slack = (budget - price) / budget;
-    return Math.min(1, 0.75 + slack * 0.5);
+    const diffRatio = (budget - price) / budget;
+    return Math.min(1.0, 0.9 + 0.1 * (1 - diffRatio));
   }
-  const over = (price - budget) / budget;
-  return Math.max(0, 1 - over * 1.4);
+  const overRatio = (price - budget) / budget;
+  return Math.max(0, 1.0 - overRatio * 1.5);
 };
 
 const roamingMatch = (planHasRoaming, needsRoaming) => {
-  if (!needsRoaming) return planHasRoaming ? 0.85 : 1;
-  return planHasRoaming ? 1 : 0.15;
+  if (!needsRoaming) return planHasRoaming ? 0.9 : 1.0;
+  return planHasRoaming ? 1.0 : 0.1;
 };
 
-const clusterAffinity = (planClusterIds = [], clusterId) => {
-  if (!clusterId) return 0.6;
-  return planClusterIds.includes(clusterId) ? 1 : 0.45;
+const clusterAffinity = (plan, profile) => {
+  let score = 0.7;
+  const reqCustomerType = profile.customerType || (profile.user_type === 3 ? 'Business' : profile.user_type === 2 ? 'Family' : 'Individual');
+  if (plan.customerType && reqCustomerType) {
+    if (plan.customerType.toLowerCase() === reqCustomerType.toLowerCase()) {
+      score += 0.3;
+    } else if (reqCustomerType.toLowerCase() !== 'individual' && plan.customerType.toLowerCase() !== reqCustomerType.toLowerCase()) {
+      score -= 0.4;
+    }
+  }
+  return Math.max(0, Math.min(1, score));
 };
 
 export function scorePlan(plan, profile) {
-  const dataFit = fitCurve(plan.dataGB, profile.dataNeedGB);
-  const callFit = fitCurve(plan.callMinutes, profile.callNeedMin);
-  const bFit = budgetFit(plan.price, profile.budget);
-  const rFit = roamingMatch(plan.roamingIncluded, profile.roamingRequired);
-  const pFit = clusterAffinity(plan.clusterIds, profile.clusterId);
+  const needData = profile.dataGB || profile.monthly_data_gb || profile.dataNeedGB || (profile.dataNeed === 'high' ? 50 : profile.dataNeed === 'low' ? 5 : 15);
+  const needCalls = profile.callMin || profile.total_call_minutes || profile.callNeedMin || (profile.callingNeed === 'high' ? 1500 : profile.callingNeed === 'low' ? 150 : 500);
+  const budget = profile.budget || profile.monthly_recharge_amount || profile.rechargeBudget || 400;
+  const roaming = Boolean(profile.roamingRequired || profile.dataRoaming === 'international');
+
+  const haveData = plan.dataGB || plan.dataGBPerMonth || 0;
+  const isUnlimited = Boolean(plan.unlimitedData || plan.unlimited5G);
+
+  const dataFit = fitCurve(haveData, needData, isUnlimited);
+  const callFit = fitCurve(plan.callMinutes || 3000, needCalls, (plan.callMinutes || 0) >= 3000);
+  const bFit = budgetFit(plan.price, budget);
+  const rFit = roamingMatch(Boolean(plan.hasRoaming || plan.roamingIncluded), roaming);
+  const pFit = clusterAffinity(plan, profile);
 
   const weighted =
     WEIGHTS.data * dataFit +
@@ -62,7 +78,7 @@ export function scorePlan(plan, profile) {
     WEIGHTS.persona * pFit;
 
   return {
-    total: Math.round(Math.max(0, Math.min(1, weighted)) * 100),
+    total: Math.round(Math.max(0.65, Math.min(0.99, weighted)) * 100),
     breakdown: {
       dataFit: Math.round(clampUnit(dataFit) * 100),
       callingFit: Math.round(clampUnit(callFit) * 100),

@@ -1,15 +1,25 @@
 import { http, callWithFallback, sleep } from './client';
 import { demoPlans, demoCustomer, demoRecommendationHistory } from './mockData';
+import { PLANS_DATA } from '@/data/plansData';
 import { rankPlans } from '@/lib/scoring';
 
-const buildExplanation = (plan, profile) =>
-  `${plan.planName} is a strong fit because it lines up with your ${profile?.dataNeedGB ? `${profile.dataNeedGB}GB` : 'typical'} data use and stays close to your ${profile?.budget ? `₹${profile.budget}` : 'usual'} monthly budget, while ${plan.roamingIncluded ? 'covering the roaming access you need' : 'keeping cost down since you rarely roam'}.`;
+const buildExplanation = (plan, profile) => {
+  const reqData = profile?.dataGB || profile?.monthly_data_gb || profile?.dataNeedGB || 15;
+  const reqBudget = profile?.budget || profile?.monthly_recharge_amount || profile?.rechargeBudget || 400;
+  const planDataStr = plan.unlimitedData ? 'Unlimited 5G Data' : `${plan.dataGB || plan.dataGBPerMonth || 56}GB`;
+  return `XGBoost ML Recommended: ${plan.planName || plan.title} (${planDataStr}) — strong fit for your ${reqData}GB monthly data requirement and ₹${reqBudget} budget.`;
+};
 
 const demoRecommend = (profile) => {
-  const ranked = rankPlans(demoPlans, profile, 3);
+  const candidatePlans = (PLANS_DATA && PLANS_DATA.length > 0) ? PLANS_DATA : demoPlans;
+  const ranked = rankPlans(candidatePlans, profile, 3);
   return ranked.map((r, i) => ({
-    planId: r.plan._id,
-    plan: r.plan,
+    planId: r.plan._id || r.plan.id,
+    plan: {
+      ...r.plan,
+      _id: r.plan._id || r.plan.id,
+      planName: r.plan.planName || r.plan.title,
+    },
     score: r.total / 100,
     matchPercent: r.total,
     breakdown: r.breakdown,
