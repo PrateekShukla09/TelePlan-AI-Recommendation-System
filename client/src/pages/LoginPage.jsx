@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNateleplangate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import { Wifi, Mail, Lock, ArrowRight, ShieldCheck, Eye, EyeOff, Sparkles, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function LoginPage() {
-  const nateleplangate = useNateleplangate();
+  const navigate = useNavigate();
   const { login, isDarkMode } = useAppStore();
 
   const [email, setEmail] = useState('');
@@ -27,7 +27,7 @@ export default function LoginPage() {
       const res = login(email, password);
       setLoading(false);
       if (res.success) {
-        nateleplangate('/app/dashboard');
+        Navigate('/app/dashboard');
       } else {
         setError(res.message);
       }
@@ -43,7 +43,7 @@ export default function LoginPage() {
       const res = login('aarav@example.com', 'password123');
       setLoading(false);
       if (res.success) {
-        nateleplangate('/app/dashboard');
+        Navigate('/app/dashboard');
       }
     }, 300);
   };

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Nateleplangate } from 'react-router-dom';
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Skeleton } from '@/components/ui/Primitives';
 
 const TelePlanApp = lazy(() => import('@/pages/TelePlanApp'));
@@ -20,7 +20,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<TelePlanApp />} />
         <Route path="/app/*" element={<TelePlanApp />} />
-        <Route path="*" element={<Nateleplangate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
   );

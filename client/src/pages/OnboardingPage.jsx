@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNateleplangate, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { Logo } from '@/components/layout/AppShell';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
@@ -9,7 +9,7 @@ import { getRecommendationsByProfile } from '@/api/recommendations';
 import { NEED_TO_GB, NEED_TO_MIN } from '@/components/onboarding/steps';
 
 export default function OnboardingPage() {
-  const nateleplangate = useNateleplangate();
+  const navigate = useNavigate();
   const [phase, setPhase] = useState('wizard'); // wizard | analyzing
   const setProfileField = useAppStore((s) => s.setProfileField);
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
@@ -38,7 +38,7 @@ export default function OnboardingPage() {
 
   const finishAnalysis = () => {
     completeOnboarding();
-    nateleplangate('/app/recommendations', { state: { justOnboarded: true } });
+    Navigate('/app/recommendations', { state: { justOnboarded: true } });
   };
 
   return (

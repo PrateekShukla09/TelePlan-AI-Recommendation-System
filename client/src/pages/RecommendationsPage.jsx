@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocation, useNateleplangate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, Scale, RefreshCcw } from 'lucide-react';
 import { SectionHeading, Button, Card, DemoBadge, Skeleton, ErrorState, EmptyState } from '@/components/ui/Primitives';
@@ -17,7 +17,7 @@ export default function RecommendationsPage() {
   const compareIds = useAppStore((s) => s.compareIds);
   const toggleCompare = useAppStore((s) => s.toggleCompare);
   const location = useLocation();
-  const nateleplangate = useNateleplangate();
+  const navigate = useNavigate();
   const justOnboarded = location.state?.justOnboarded;
 
   return (
@@ -51,7 +51,7 @@ export default function RecommendationsPage() {
           title="No recommendations yet"
           description="Complete your Telecom Twin profile to get AI-matched plan recommendations."
           action={
-            <Button onClick={() => nateleplangate('/onboarding')} icon={Sparkles}>
+            <Button onClick={() => Navigate('/onboarding')} icon={Sparkles}>
               Start onboarding
             </Button>
           }
@@ -84,7 +84,7 @@ export default function RecommendationsPage() {
               <Button variant="ghost" size="sm" icon={RefreshCcw} onClick={reload}>
                 Refresh
               </Button>
-              <Button size="sm" icon={Scale} disabled={compareIds.length === 0} onClick={() => nateleplangate('/app/compare')}>
+              <Button size="sm" icon={Scale} disabled={compareIds.length === 0} onClick={() => Navigate('/app/compare')}>
                 Compare selected
               </Button>
             </div>

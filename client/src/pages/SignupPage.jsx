@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNateleplangate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import { Wifi, User, Mail, Phone, Lock, ArrowRight, ShieldCheck, Sparkles, Check, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -13,7 +13,7 @@ const DATA_NEEDS = [
 ];
 
 export default function SignupPage() {
-  const nateleplangate = useNateleplangate();
+  const navigate = useNavigate();
   const { signup, isDarkMode } = useAppStore();
 
   const [formData, setFormData] = useState({
@@ -68,7 +68,7 @@ export default function SignupPage() {
 
       setLoading(false);
       if (res.success) {
-        nateleplangate('/app/profile');
+        Navigate('/app/profile');
       } else {
         setError(res.message);
       }

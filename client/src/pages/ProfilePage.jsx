@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNateleplangate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import {
   User,
@@ -23,7 +23,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProfilePage() {
-  const nateleplangate = useNateleplangate();
+  const navigate = useNavigate();
   const { currentUser, updateProfile, logout, isDarkMode, profile } = useAppStore();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -72,7 +72,7 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     logout();
-    nateleplangate('/login');
+    Navigate('/login');
   };
 
   const userProfile = currentUser.profile || profile || {};
