@@ -60,13 +60,13 @@ export const STEPS = [
     ],
   },
   {
-    key: 'familyOrInditeleplandual',
+    key: 'familyOrIndividual',
     icon: Users,
     title: 'Is this plan for you, or the whole family?',
     subtitle: 'This helps us prioritize shared-data and multi-line plans.',
     type: 'choice',
     options: [
-      { value: 'inditeleplandual', label: 'Just me', hint: 'A single-line personal plan' },
+      { value: 'individual', label: 'Just me', hint: 'A single-line personal plan' },
       { value: 'family', label: 'Family', hint: 'Shared data or multiple connections' },
     ],
   },

@@ -7,13 +7,13 @@ import { startChat, sendChatMessage } from '@/api/chat';
 import { useAppStore } from '@/store/useAppStore';
 
 const SUGGESTED = [
-  'I stream a lot of teleplandeo and rarely call',
+  'I stream a lot of video and rarely call',
   'I need a plan under ₹500 with good calling minutes',
   'I travel internationally every couple of months',
   'What plan works best for a family of four?',
 ];
 
-const REQUIRED_FIELDS = ['dataNeed', 'callingNeed', 'budget', 'roamingRequired', 'familyOrInditeleplandual'];
+const REQUIRED_FIELDS = ['dataNeed', 'callingNeed', 'budget', 'roamingRequired', 'familyOrIndividual'];
 
 export function ChatWindow({ compact = false, className = '' }) {
   const [sessionId, setSessionId] = useState(null);

@@ -371,6 +371,34 @@ function printInferenceLog(mlUser, profile, plans) {
   console.log('============================================================\n');
 }
 
+const OFFICIAL_25_PLANS = [
+  { planName: 'Essential Voice', price: 199, dataGB: 5, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Budget & Essential', sourceOperatorRef: 'TelePlan Core' },
+  { planName: 'Essential Data', price: 249, dataGB: 42, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Budget & Essential', sourceOperatorRef: 'TelePlan Core' },
+  { planName: 'Student Power', price: 299, dataGB: 56, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Budget & Essential', sourceOperatorRef: 'TelePlan Core' },
+  { planName: 'Voice Plus', price: 299, dataGB: 20, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 56, category: 'Budget & Essential', sourceOperatorRef: 'TelePlan Core' },
+  { planName: 'Senior Connect', price: 249, dataGB: 10, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 56, category: 'Budget & Essential', sourceOperatorRef: 'TelePlan Core' },
+  { planName: '5G Freedom', price: 349, dataGB: 56, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Unlimited / 5G', sourceOperatorRef: 'TelePlan 5G', unlimited5G: true },
+  { planName: 'Infinity 4G/5G', price: 399, dataGB: 100, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Unlimited / 5G', sourceOperatorRef: 'TelePlan 5G', unlimitedData: true },
+  { planName: 'Infinity Plus', price: 449, dataGB: 120, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Unlimited / 5G', sourceOperatorRef: 'TelePlan Premium', unlimitedData: true },
+  { planName: 'Power 5G', price: 499, dataGB: 112, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 56, category: 'Unlimited / 5G', sourceOperatorRef: 'TelePlan 5G', unlimited5G: true },
+  { planName: '5G Long-Life', price: 649, dataGB: 137, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 56, category: 'Unlimited / 5G', sourceOperatorRef: 'TelePlan 5G', unlimited5G: true },
+  { planName: 'Night Infinity', price: 299, dataGB: 56, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Behaviour-Based', sourceOperatorRef: 'TelePlan Special' },
+  { planName: 'Night Power', price: 349, dataGB: 56, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Behaviour-Based', sourceOperatorRef: 'TelePlan Special' },
+  { planName: 'Weekend Infinity', price: 399, dataGB: 56, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Behaviour-Based', sourceOperatorRef: 'TelePlan Special' },
+  { planName: 'Gamer Infinity', price: 449, dataGB: 100, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Behaviour-Based', sourceOperatorRef: 'TelePlan Special' },
+  { planName: 'Stream Infinity', price: 499, dataGB: 120, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Behaviour-Based', sourceOperatorRef: 'TelePlan Special' },
+  { planName: 'Social Infinity', price: 349, dataGB: 56, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Behaviour-Based', sourceOperatorRef: 'TelePlan Special' },
+  { planName: 'AI & Coding Pro', price: 499, dataGB: 100, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Professional / Specialised', sourceOperatorRef: 'TelePlan Pro', unlimitedData: true },
+  { planName: 'Work From Anywhere', price: 549, dataGB: 100, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Professional / Specialised', sourceOperatorRef: 'TelePlan Pro', unlimitedData: true },
+  { planName: 'Creator Pro', price: 599, dataGB: 150, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 28, category: 'Professional / Specialised', sourceOperatorRef: 'TelePlan Pro', unlimitedData: true },
+  { planName: 'Traveller Pro', price: 699, dataGB: 112, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 56, category: 'Professional / Specialised', sourceOperatorRef: 'TelePlan Global' },
+  { planName: 'International Connect', price: 799, dataGB: 112, callMinutes: 3000, sms: 100, roamingIncluded: true, validityDays: 56, category: 'Professional / Specialised', sourceOperatorRef: 'TelePlan Global' },
+  { planName: 'Family Share 3', price: 899, dataGB: 150, callMinutes: 5000, sms: 300, roamingIncluded: true, validityDays: 56, category: 'Family / Premium / Long Validity', sourceOperatorRef: 'TelePlan Family' },
+  { planName: 'Family Max 4', price: 1499, dataGB: 300, callMinutes: 8000, sms: 400, roamingIncluded: true, validityDays: 90, category: 'Family / Premium / Long Validity', sourceOperatorRef: 'TelePlan Family' },
+  { planName: 'Premium Infinity', price: 1999, dataGB: 300, callMinutes: 10000, sms: 500, roamingIncluded: true, validityDays: 90, category: 'Family / Premium / Long Validity', sourceOperatorRef: 'TelePlan Family' },
+  { planName: 'Annual Infinity', price: 3999, dataGB: 730, callMinutes: 12000, sms: 1200, roamingIncluded: true, validityDays: 365, category: 'Family / Premium / Long Validity', sourceOperatorRef: 'TelePlan Core' }
+];
+
 /**
  * Predict top recommendations using XGBoost ML model
  */
@@ -379,23 +407,27 @@ async function getMLRecommendations(profile = {}, fallbackPlans = [], topN = 3) 
   const scriptPath = path.join(__dirname, '..', '..', 'xgboost-project', 'predict_json.py');
   const payload = JSON.stringify({ ...mlUser, top_n: topN });
 
-  try {
-    const { stdout } = await execFilePromise('python', [scriptPath, payload], {
-      timeout: 10000,
-      maxBuffer: 1024 * 1024
-    });
+  const pyCmds = ['python', 'python3', 'py'];
+  for (const cmd of pyCmds) {
+    try {
+      const { stdout } = await execFilePromise(cmd, [scriptPath, payload], {
+        timeout: 10000,
+        maxBuffer: 1024 * 1024
+      });
 
-    const parsed = JSON.parse(stdout);
-    if (parsed.status === 'success' && Array.isArray(parsed.plans) && parsed.plans.length > 0) {
-      printInferenceLog(mlUser, profile, parsed.plans);
-      return parsed.plans;
+      const parsed = JSON.parse(stdout);
+      if (parsed.status === 'success' && Array.isArray(parsed.plans) && parsed.plans.length > 0) {
+        printInferenceLog(mlUser, profile, parsed.plans);
+        return parsed.plans;
+      }
+    } catch (err) {
+      // Continue trying next Python alias
     }
-  } catch (err) {
-    console.warn('ML Model prediction failed, falling back to math scoring:', err.message);
   }
 
-  // Fallback to rule-based mathematical scoring engine if Python script is unavailable
-  return getTopRecommendations(fallbackPlans, profile);
+  console.warn('ML Model Python execution unavailable; using fallback recommendation scoring with official 25 XGBoost catalog.');
+  const effectivePlans = (fallbackPlans && fallbackPlans.length > 0) ? fallbackPlans : OFFICIAL_25_PLANS;
+  return getTopRecommendations(effectivePlans, profile);
 }
 
 module.exports = {

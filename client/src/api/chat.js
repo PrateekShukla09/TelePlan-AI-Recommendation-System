@@ -2,7 +2,7 @@ import { http, callWithFallback, sleep } from './client';
 import { getRecommendationsByProfile } from './recommendations';
 
 const GREETING =
-  "Hi! I'm your AI tariff adteleplansor. Tell me a bit about how you use your phone — data, calls, texts, budget, roaming — and I'll find the best-fit plans for you. You can also just say \"help me find a plan\" to get started.";
+  "Hi! I'm your AI tariff advisor. Tell me a bit about how you use your phone — data, calls, texts, budget, roaming — and I'll find the best-fit plans for you. You can also just say \"help me find a plan\" to get started.";
 
 // POST /api/chat/start
 export const startChat = (customerId) =>
@@ -11,13 +11,13 @@ export const startChat = (customerId) =>
     () => ({ sessionId: `demo_session_${Date.now()}`, reply: GREETING }),
   );
 
-const FIELD_ORDER = ['dataNeed', 'callingNeed', 'budget', 'roamingRequired', 'familyOrInditeleplandual'];
+const FIELD_ORDER = ['dataNeed', 'callingNeed', 'budget', 'roamingRequired', 'familyOrIndividual'];
 const QUESTIONS = {
   dataNeed: "Roughly how much mobile data do you use a month — low (under 5GB), medium (5–20GB), or high (20GB+)?",
   callingNeed: 'And how much do you talk — low, medium, or a lot of calling?',
   budget: "What's your comfortable monthly budget for a plan, in ₹?",
   roamingRequired: 'Do you need roaming coverage (domestic or international travel)?',
-  familyOrInditeleplandual: 'Is this plan just for you, or for the whole family?',
+  familyOrIndividual: 'Is this plan just for you, or for the whole family?',
 };
 
 const NEED_GB = { low: 3, medium: 12, high: 35 };
@@ -44,9 +44,9 @@ function extractFromText(text, profile) {
     if (/\byes\b|\bneed roaming\b|travel/.test(t)) updated.roamingRequired = true;
     else if (/\bno\b|don'?t travel|not really/.test(t)) updated.roamingRequired = false;
   }
-  if (!updated.familyOrInditeleplandual) {
-    if (/family|household|shared/.test(t)) updated.familyOrInditeleplandual = 'family';
-    else if (/inditeleplandual|myself|just me|solo/.test(t)) updated.familyOrInditeleplandual = 'inditeleplandual';
+  if (!updated.familyOrIndividual) {
+    if (/family|household|shared/.test(t)) updated.familyOrIndividual = 'family';
+    else if (/individual|myself|just me|solo/.test(t)) updated.familyOrIndividual = 'individual';
   }
   return updated;
 }
@@ -58,8 +58,7 @@ function nextQuestion(profile) {
 
 // POST /api/chat/message  { sessionId, message }
 // Demo fallback runs a lightweight local version of the extract_profile
-// tool-calling flow described in the plan (section 6.6), entirely client
-// side, clearly no substitute for the real Claude-powered serteleplance.
+// tool-calling flow described in the plan, entirely client side.
 export const sendChatMessage = (sessionId, message, priorProfile = {}) =>
   callWithFallback(
     () => http.post('/chat/message', { sessionId, message }),
@@ -75,7 +74,7 @@ export const sendChatMessage = (sessionId, message, priorProfile = {}) =>
         callNeedMin: NEED_MIN[profile.callingNeed] ?? 400,
         budget: profile.budget ?? 600,
         roamingRequired: !!profile.roamingRequired,
-        familyOrInditeleplandual: profile.familyOrInditeleplandual ?? 'inditeleplandual',
+        familyOrIndividual: profile.familyOrIndividual ?? 'individual',
       };
       const { data } = await getRecommendationsByProfile(finalProfile);
       return {

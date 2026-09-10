@@ -24,7 +24,7 @@ export default function OnboardingPage() {
       callNeedMin: NEED_TO_MIN[answers.callingNeed] ?? 400,
       budget: answers.budget ?? 649,
       roamingRequired: !!answers.roamingRequired,
-      familyOrInditeleplandual: answers.familyOrInditeleplandual ?? 'inditeleplandual',
+      familyOrIndividual: answers.familyOrIndividual ?? 'individual',
       clusterId: undefined,
     };
 

@@ -7,7 +7,7 @@ const defaultProfile = {
   smsNeed: 'low',
   budget: '₹400 - ₹800/mo',
   roamingRequired: false,
-  familyOrInditeleplandual: 'Inditeleplandual',
+  familyOrIndividual: 'Individual',
 };
 
 const DEFAULT_USERS = [

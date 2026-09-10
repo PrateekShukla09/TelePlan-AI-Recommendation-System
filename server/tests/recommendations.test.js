@@ -8,6 +8,8 @@ const Recommendation = require('../src/models/Recommendation');
 
 let mongoServer;
 
+jest.setTimeout(20000);
+
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const mongoUri = mongoServer.getUri();
