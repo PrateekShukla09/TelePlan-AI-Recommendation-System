@@ -98,12 +98,22 @@ export default function TelePlanApp() {
 
     try {
       const profilePayload = {
-        dataNeed: dataGB <= 7 ? 'low' : dataGB >= 25 ? 'high' : 'medium',
-        callingNeed: callMin <= 300 ? 'low' : callMin >= 1000 ? 'high' : 'medium',
-        smsNeed: smsCount <= 100 ? 'low' : smsCount >= 350 ? 'high' : 'medium',
+        dataGB,
+        dataNeedGB: dataGB,
+        monthly_data_gb: dataGB,
+        callMin,
+        callNeedMin: callMin,
+        total_call_minutes: callMin,
+        smsCount,
+        sms_per_month: smsCount,
         budget: rechargeBudget,
+        monthly_recharge_amount: rechargeBudget,
         roamingRequired: dataRoaming !== 'none',
         customerType,
+        user_type: customerType === 'Business' ? 3 : (customerType === 'Family' ? 2 : 1),
+        use5G,
+        dataRoaming,
+        memberCount,
       };
       const res = await getRecommendationsByProfile(profilePayload);
       if (res && res.data && Array.isArray(res.data.plans) && res.data.plans.length > 0) {

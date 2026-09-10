@@ -75,11 +75,8 @@ def recommend_plans(model, user, plans, thresholds, top_n=3):
 
     user_features = build_user_features(user, thresholds)
 
-    eligible_plans = filter_plans_by_user_type(plans, user["user_type"])
-    eligible_plans = filter_plans_by_data_adequacy(
-        eligible_plans,
-        user["monthly_data_gb"]
-    )
+    # Evaluate across ALL 25 plans without discarding options upfront
+    eligible_plans = plans.copy()
 
     user_features["key"] = 1
     eligible_plans["key"] = 1
@@ -89,14 +86,35 @@ def recommend_plans(model, user, plans, thresholds, top_n=3):
     data["rank_score"] = model.predict(data[FEATURE_COLUMNS])
     data["monthly_price"] = data["monthly_price"].round(2)
 
-    budget = float(user.get("monthly_recharge_amount", 650.0))
+    # 1. Budget Suitability Adjustment
+    budget = float(user.get("monthly_recharge_amount", 400.0))
     if budget > 0:
         price_diff_ratio = (data["price"] - budget).abs() / max(100.0, budget)
-        data["rank_score"] -= price_diff_ratio * 1.5
+        data["rank_score"] -= price_diff_ratio * 3.0
 
+    # 2. Data Capacity Match Adjustment
+    user_data_gb = float(user.get("monthly_data_gb", 15.0))
+    if user_data_gb > 0:
+        # Boost plans that comfortably satisfy the required monthly data capacity
+        data.loc[(data["unlimited_data"] == 1) | (data["monthly_data_capacity"] >= user_data_gb), "rank_score"] += 2.0
+        # Penalize plans that fall severely short of the user's data demands
+        data.loc[(data["unlimited_data"] == 0) & (data["monthly_data_capacity"] < user_data_gb * 0.5), "rank_score"] -= 4.0
+
+    # 3. User Type Match Adjustment (1: Individual, 2: Family, 3: Business)
+    user_type = int(user.get("user_type", 1))
+    if user_type == 2:
+        data.loc[data["family_plan"] == 1, "rank_score"] += 6.0
+        data.loc[data["family_plan"] == 0, "rank_score"] -= 3.0
+    elif user_type == 3:
+        data.loc[(data["business_plan"] == 1) | (data["category"] == "Professional / Specialised"), "rank_score"] += 6.0
+        data.loc[(data["business_plan"] == 0) & (data["category"] != "Professional / Specialised"), "rank_score"] -= 3.0
+    else:
+        data.loc[data["family_plan"] == 1, "rank_score"] -= 4.0
+
+    # 4. Roaming / International Call Adjustment
     isd_min = float(user.get("international_call_minutes", 0.0))
     if isd_min > 0:
-        data.loc[data["isd_minutes"] > 0, "rank_score"] += 2.0
+        data.loc[data["isd_minutes"] > 0, "rank_score"] += 5.0
 
     recommendations = data.sort_values(
         ["rank_score", "plan_id"],

@@ -29,29 +29,40 @@ function parseBudgetNumber(val) {
 
 function formatProfileForBackend(profile) {
   if (!profile) return {};
-  let dataNeed = profile.dataNeed;
-  if (!dataNeed && profile.dataNeedGB) {
-    if (profile.dataNeedGB <= 7) dataNeed = 'low';
-    else if (profile.dataNeedGB >= 25) dataNeed = 'high';
-    else dataNeed = 'medium';
-  }
-  let callingNeed = profile.callingNeed;
-  if (!callingNeed && profile.callNeedMin) {
-    if (profile.callNeedMin <= 300) callingNeed = 'low';
-    else if (profile.callNeedMin >= 1000) callingNeed = 'high';
-    else callingNeed = 'medium';
-  }
+  const dataGB = typeof profile.dataGB === 'number' ? profile.dataGB : (typeof profile.dataNeedGB === 'number' ? profile.dataNeedGB : 15);
+  const callMin = typeof profile.callMin === 'number' ? profile.callMin : (typeof profile.callNeedMin === 'number' ? profile.callNeedMin : 400);
+  const smsCount = typeof profile.smsCount === 'number' ? profile.smsCount : 100;
+  
   let budget = profile.budget;
   if (typeof budget === 'string') {
     const num = parseBudgetNumber(budget);
     budget = num || null;
   }
+  
   return {
-    dataNeed: dataNeed || 'medium',
-    callingNeed: callingNeed || 'medium',
-    smsNeed: profile.smsNeed || 'medium',
-    budget: budget || null,
+    dataGB,
+    dataNeedGB: dataGB,
+    monthly_data_gb: dataGB,
+    dataNeed: dataGB <= 7 ? 'low' : dataGB >= 25 ? 'high' : 'medium',
+    
+    callMin,
+    callNeedMin: callMin,
+    total_call_minutes: callMin,
+    callingNeed: callMin <= 300 ? 'low' : callMin >= 1000 ? 'high' : 'medium',
+    
+    smsCount,
+    sms_per_month: smsCount,
+    smsNeed: smsCount <= 100 ? 'low' : smsCount >= 350 ? 'high' : 'medium',
+    
+    budget: budget || 400,
+    monthly_recharge_amount: budget || 400,
+    
     roamingRequired: Boolean(profile.roamingRequired),
+    customerType: profile.customerType || 'Individual',
+    familyOrIndividual: profile.customerType ? profile.customerType.toLowerCase() : 'individual',
+    user_type: profile.customerType === 'Business' ? 3 : (profile.customerType === 'Family' ? 2 : 1),
+    use5G: profile.use5G !== undefined ? Boolean(profile.use5G) : true,
+    dataRoaming: profile.dataRoaming || 'none',
   };
 }
 

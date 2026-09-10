@@ -207,6 +207,8 @@ function normalizeProfileToMLUser(profile = {}) {
   let monthly_data_gb = 15.0;
   if (typeof profile.monthly_data_gb === 'number') {
     monthly_data_gb = profile.monthly_data_gb;
+  } else if (typeof profile.dataGB === 'number') {
+    monthly_data_gb = profile.dataGB;
   } else if (typeof profile.dataNeedGB === 'number') {
     monthly_data_gb = profile.dataNeedGB;
   } else if (typeof profile.dataNeed === 'number') {
@@ -214,12 +216,14 @@ function normalizeProfileToMLUser(profile = {}) {
   } else if (profile.dataNeed === 'low') {
     monthly_data_gb = 5.0;
   } else if (profile.dataNeed === 'high') {
-    monthly_data_gb = 30.0;
+    monthly_data_gb = 50.0;
   }
 
   let total_call_minutes = 400.0;
   if (typeof profile.total_call_minutes === 'number') {
     total_call_minutes = profile.total_call_minutes;
+  } else if (typeof profile.callMin === 'number') {
+    total_call_minutes = profile.callMin;
   } else if (typeof profile.callNeedMin === 'number') {
     total_call_minutes = profile.callNeedMin;
   } else if (typeof profile.callingNeed === 'number') {
@@ -227,7 +231,7 @@ function normalizeProfileToMLUser(profile = {}) {
   } else if (profile.callingNeed === 'low') {
     total_call_minutes = 150.0;
   } else if (profile.callingNeed === 'high') {
-    total_call_minutes = 1200.0;
+    total_call_minutes = 1500.0;
   }
 
   let sms_per_month = 100.0;
@@ -238,23 +242,25 @@ function normalizeProfileToMLUser(profile = {}) {
   } else if (profile.smsNeed === 'low') {
     sms_per_month = 30.0;
   } else if (profile.smsNeed === 'high') {
-    sms_per_month = 450.0;
+    sms_per_month = 350.0;
   }
 
-  let monthly_recharge_amount = 650.0;
+  let monthly_recharge_amount = 400.0;
   if (typeof profile.monthly_recharge_amount === 'number' && profile.monthly_recharge_amount > 0) {
     monthly_recharge_amount = profile.monthly_recharge_amount;
   } else if (typeof profile.budget === 'number' && profile.budget > 0) {
     monthly_recharge_amount = profile.budget;
+  } else if (typeof profile.rechargeBudget === 'number' && profile.rechargeBudget > 0) {
+    monthly_recharge_amount = profile.rechargeBudget;
   }
 
   let user_type = 1;
   if (typeof profile.user_type === 'number') {
     user_type = profile.user_type;
-  } else if (profile.familyOrIndividual === 'family' || profile.userType === 'family') {
-    user_type = 2;
-  } else if (profile.userType === 'business') {
+  } else if (profile.customerType === 'Business' || profile.userType === 'business') {
     user_type = 3;
+  } else if (profile.customerType === 'Family' || profile.familyOrIndividual === 'family' || profile.userType === 'family') {
+    user_type = 2;
   }
 
   let international_call_minutes = 0.0;
@@ -262,8 +268,8 @@ function normalizeProfileToMLUser(profile = {}) {
     international_call_minutes = profile.international_call_minutes;
   } else if (typeof profile.internationalUsage === 'number') {
     international_call_minutes = profile.internationalUsage;
-  } else if (profile.roamingRequired || (profile.roamingUsage && profile.roamingUsage > 0)) {
-    international_call_minutes = 30.0;
+  } else if (profile.roamingRequired || profile.dataRoaming === 'international' || (profile.roamingUsage && profile.roamingUsage > 0)) {
+    international_call_minutes = 60.0;
   }
 
   return {
