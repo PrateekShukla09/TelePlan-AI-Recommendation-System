@@ -615,12 +615,9 @@ def run_terminal_chat() -> None:
         "      TelePlan AI Tariff Chatbot Assistant        "
     )
 
+    mode_str = f"✨ Live AI Inference ({chat_model_name})" if using_ai_model else "Smart Rule Engine (No API Key)"
     print(
-        f"      Mode: "
-        f"{'✨ Live AI Inference (' + chat_model_name + ')'"
-        if using_ai_model
-        else "Smart Rule Engine (No API Key)"
-        }"
+        f"      Mode: {mode_str}"
     )
 
     print(
