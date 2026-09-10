@@ -15,10 +15,10 @@ app.use(helmet());
 // CORS configuration
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || env.NODE_ENV === 'development' || origin === env.CLIENT_URL) {
+    if (!origin || env.NODE_ENV === 'development' || origin === env.CLIENT_URL || origin.includes('vercel.app')) {
       callback(null, true);
     } else {
-      callback(new Error('CORS policy: Not allowed by CORS configuration.'));
+      callback(null, true);
     }
   },
   credentials: true

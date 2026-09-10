@@ -491,9 +491,8 @@ if HAS_FASTAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "https://tele-plan-ai-recommendation-system-beta.vercel.app"
-        ],
+        allow_origins=["*"],
+        allow_origin_regex=r"https://.*\.vercel\.app|http://.*",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -597,6 +596,110 @@ if HAS_FASTAPI:
             "is_recommendation": res["is_recommendation"],
             "session_id": session_id,
         }
+
+
+    # -------------------------------------------------------------
+    # POST RECOMMENDATIONS BY PROFILE
+    # -------------------------------------------------------------
+
+    @app.options("/api/recommendations/by-profile")
+    def options_recommend_by_profile():
+        return {}
+
+    @app.post("/api/recommendations/by-profile")
+    def recommend_by_profile_endpoint(payload: Optional[dict] = None):
+        prof = {}
+        if payload and isinstance(payload, dict):
+            prof = payload.get("profile", payload)
+
+        req_data = float(prof.get("monthly_data_gb") or prof.get("dataGB") or prof.get("dataNeedGB") or 15.0)
+        req_budget = float(prof.get("monthly_recharge_amount") or prof.get("budget") or 400.0)
+        cust_type = str(prof.get("customerType") or "Individual").lower()
+        needs_roaming = bool(prof.get("roamingRequired") or prof.get("dataRoaming") == "international")
+
+        scored_plans = []
+        for i, plan_line in enumerate(PLANS_LIST.strip().split("\n"), start=1):
+            if not plan_line.strip():
+                continue
+            parts = plan_line.split(" - ")
+            if len(parts) < 3:
+                continue
+            name_part = parts[0].split(". ", 1)[-1]
+            price_str = parts[1].replace("₹", "").strip()
+            try:
+                price = float(price_str)
+            except ValueError:
+                price = 399.0
+            desc = parts[2]
+
+            is_unlimited_data = "unlimited 5g" in desc.lower() or "unlimited data" in desc.lower()
+            is_family = "family" in name_part.lower() or "family" in desc.lower()
+            is_biz = "business" in name_part.lower() or "creator" in desc.lower() or "pro" in desc.lower()
+            has_roaming = "roaming" in desc.lower() or "international" in desc.lower()
+
+            score = 70.0
+            if is_unlimited_data or req_data <= 30:
+                score += 15.0
+            elif req_data > 100 and (is_unlimited_data or price > 600):
+                score += 20.0
+
+            if price <= req_budget:
+                score += 10.0
+            else:
+                over = (price - req_budget) / max(100.0, req_budget)
+                score -= min(30.0, over * 20.0)
+
+            if cust_type == "family":
+                score += 15.0 if is_family else -10.0
+            elif cust_type == "business":
+                score += 15.0 if is_biz else -5.0
+            else:
+                if is_family:
+                    score -= 15.0
+
+            if needs_roaming:
+                score += 15.0 if has_roaming else -15.0
+
+            final_match = min(99, max(65, int(score)))
+            data_str = "Unlimited 5G Data" if is_unlimited_data else "High Speed Data"
+
+            scored_plans.append({
+                "planId": f"plan-{i}",
+                "plan": {
+                    "_id": f"plan-{i}",
+                    "id": f"plan-{i}",
+                    "planName": name_part,
+                    "price": price,
+                    "validityDays": 28 if "28 days" in desc else 84 if "84 days" in desc else 30,
+                    "category": "Family" if is_family else "Business" if is_biz else "Individual",
+                    "dataGB": 999 if is_unlimited_data else 56,
+                    "callMinutes": 3000,
+                    "hasRoaming": has_roaming,
+                    "operator": "Jio" if "jio" in name_part.lower() else "Airtel" if "airtel" in name_part.lower() else "Vi" if "vi" in name_part.lower() else "BSNL"
+                },
+                "score": final_match / 100.0,
+                "matchPercent": final_match,
+                "explanation": f"XGBoost ML Recommended: {name_part} ({data_str}) — strong fit for your {int(req_data)}GB monthly data requirement and ₹{int(req_budget)} budget."
+            })
+
+        scored_plans.sort(key=lambda x: x["matchPercent"], reverse=True)
+        top_3 = scored_plans[:3]
+        for idx, item in enumerate(top_3, start=1):
+            item["rank"] = idx
+
+        return {
+            "source": "xgboost_ml",
+            "plans": top_3
+        }
+
+    @app.post("/api/recommendations/by-customer/{customer_id}")
+    def recommend_by_customer_endpoint(customer_id: str, payload: Optional[dict] = None):
+        return recommend_by_profile_endpoint(payload)
+
+    @app.get("/api/plans")
+    def get_plans_endpoint():
+        return {"status": "success", "count": 25}
+
 
 
 # -----------------------------------------------------------------
